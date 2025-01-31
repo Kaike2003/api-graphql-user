@@ -1,6 +1,5 @@
 import { ApolloServer } from "apollo-server";
 import { dataSources } from "./config/dataSource/dataSource";
-import { makeExecutableSchema } from "@graphql-tools/schema";
 import { loadFilesSync } from "@graphql-tools/load-files";
 import { mergeTypeDefs, mergeResolvers } from "@graphql-tools/merge";
 import { join } from "node:path";

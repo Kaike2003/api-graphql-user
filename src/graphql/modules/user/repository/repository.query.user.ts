@@ -1,7 +1,8 @@
 import { PrismaClient } from "@prisma/client";
-import { IQueryRepositoryUser } from "../interface/repository/query.repository.user";
 import { User } from "../interface";
 import { DataSource } from "apollo-datasource";
+import { UserNotFoundError } from "../../../../errors/UserNotFoundError";
+import { queryUserSchema } from "../validation/user.validation";
 
 export class RepositoryQueryUser extends DataSource {
   private constructor(private readonly prisma: PrismaClient) {
@@ -13,14 +14,24 @@ export class RepositoryQueryUser extends DataSource {
   }
 
   public async user(data: { email: string }): Promise<User> {
-    const user: User = {
-      id: "1",
-      email: "",
-      age: 20,
-      name: "",
-    };
+    try {
+      return await queryUserSchema
+        .parseAsync(data)
+        .then(async (res) => {
+          const existedUser = await this.prisma.user.findUnique({ where: { email: res.email } });
 
-    return user;
+          if (existedUser) {
+            return existedUser;
+          }
+
+          throw new UserNotFoundError("User not found");
+        })
+        .catch((error) => {
+          throw new Error(error);
+        });
+    } catch (error) {
+      throw new Error(error);
+    }
   }
 
   public async users(): Promise<User[]> {
